@@ -1,0 +1,13 @@
+title: Swanandee's World
+description: Art, cool tech things, and my blog!
+url: "https://swanandee.com"
+baseurl: ""
+
+markdown: kramdown
+permalink: /blog/:title/
+
+plugins:
+  - jekyll-feed
+
+exclude:
+  - README.md
