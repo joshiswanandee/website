@@ -21,7 +21,7 @@ permalink: /art/
 {% assign art_thumbs = site.static_files | where_exp: "file", "file.path contains '/assets/images/art/thumbs/'" %}
 {% assign art_thumbs = art_thumbs | sort: "modified_time" | reverse %}
 
-<div class="card-grid">
+<div class="card-grid gallery-grid">
   {% for thumb in art_thumbs %}
   {% assign full_path = thumb.path | replace: '/thumbs/', '/' %}
   {% assign meta = site.data.art[thumb.name] %}
