@@ -4,7 +4,7 @@ My personal website — art, tech projects, and my blog. Built with [Jekyll](htt
 
 ## Adding content
 
-- **Art**: add an image to `assets/images/art/` and a new card in `art/index.html`.
+- **Art**: add the full-size image to `assets/images/art/` and a matching small thumbnail (same filename) to `assets/images/art/thumbs/`. It shows up in the gallery automatically. To add a prize or description, add an entry to `_data/art.yml` (see the example in that file).
 - **Tech projects**: add a new card in `tech/index.html`.
 - **Blog post**: add a new file to `_posts/` named `YYYY-MM-DD-title.md`. See the comment at the bottom of the first post for the format.
 

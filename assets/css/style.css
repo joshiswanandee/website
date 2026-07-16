@@ -136,12 +136,113 @@ main {
   margin-bottom: 10px;
 }
 
-/* Gallery images */
-.gallery img {
-  width: 100%;
-  border-radius: 16px;
-  display: block;
+/* Gallery thumbnails */
+.card.gallery {
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
 }
+
+.card.gallery img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.card.gallery:hover img { transform: scale(1.05); }
+
+.card.gallery h3 {
+  margin: 0;
+  padding: 12px 16px 4px;
+  font-size: 1.05rem;
+}
+
+.card.gallery .prize {
+  margin: 0;
+  padding: 0 16px 14px;
+  color: #b8860b;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+/* Lightbox */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 15, 25, 0.92);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 30px;
+}
+
+.lightbox-overlay.open { display: flex; }
+
+.lightbox-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 70vh;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+
+.lightbox-caption {
+  color: #fff;
+  text-align: center;
+  margin-top: 14px;
+  max-width: 520px;
+}
+
+.lightbox-title {
+  font-family: 'Baloo 2', cursive;
+  margin: 0 0 4px;
+}
+
+.lightbox-prize {
+  color: var(--yellow);
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.lightbox-info {
+  color: #ddd;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.lightbox-close, .lightbox-prev, .lightbox-next {
+  position: absolute;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.lightbox-close:hover, .lightbox-prev:hover, .lightbox-next:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.lightbox-close { top: 20px; right: 20px; }
+.lightbox-prev { left: 20px; top: 50%; transform: translateY(-50%); }
+.lightbox-next { right: 20px; top: 50%; transform: translateY(-50%); }
 
 /* Blog list */
 .post-list {

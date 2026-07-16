@@ -1,0 +1,10 @@
+# Add extra info here for any artwork that won a prize or needs a description.
+# The key must exactly match the image filename (the one in assets/images/art/).
+# You don't need an entry for every picture -- only ones with something extra to say.
+#
+# Example:
+#
+# dragon.jpg:
+#   title: My Dragon
+#   prize: "1st Place, School Art Fair 2026"
+#   info: "Drawn with colored pencils over two weekends."

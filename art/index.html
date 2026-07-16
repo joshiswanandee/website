@@ -4,21 +4,40 @@ title: Art
 permalink: /art/
 ---
 <h1>🖼️ My Art</h1>
-<p>Here's some of my artwork. New stuff gets added all the time!</p>
+<p>Here's some of my artwork. Click any picture to see it bigger!</p>
 
 <!--
-  HOW TO ADD A NEW PIECE OF ART:
-  1. Put your image file in assets/images/art/ (e.g. assets/images/art/my-dragon.png)
-  2. Copy one of the <div class="card gallery"> blocks below and change the src and text.
+  HOW TO ADD NEW ART:
+  1. Save a small thumbnail (around 400px wide) into assets/images/art/thumbs/
+  2. Save the full-size picture (same filename) into assets/images/art/
+  That's it -- it shows up here automatically, no need to edit this page.
+  (Ask Claude to do the resizing for you if you're not sure how.)
+
+  GOT A PRIZE OR SOME INFO TO ADD?
+  Open _data/art.yml and add a few lines for that filename -- see the
+  example in that file. No prize/info needed for most pictures.
 -->
 
+{% assign art_thumbs = site.static_files | where_exp: "file", "file.path contains '/assets/images/art/thumbs/'" %}
+{% assign art_thumbs = art_thumbs | sort: "modified_time" | reverse %}
+
 <div class="card-grid">
-  <div class="card gallery">
-    <img src="{{ '/assets/images/art/dragon.jpg' | relative_url }}" alt="A drawing of a dragon">
-    <h3>Dragon</h3>
-  </div>
-  <div class="card gallery">
-    <img src="{{ '/assets/images/art/elephant.jpg' | relative_url }}" alt="A drawing of an elephant">
-    <h3>Elephant</h3>
-  </div>
+  {% for thumb in art_thumbs %}
+  {% assign full_path = thumb.path | replace: '/thumbs/', '/' %}
+  {% assign meta = site.data.art[thumb.name] %}
+  {% if meta.title %}
+    {% assign name = meta.title %}
+  {% else %}
+    {% assign name = thumb.basename | replace: '-', ' ' | replace: '_', ' ' | capitalize %}
+  {% endif %}
+  <a href="{{ full_path | relative_url }}" class="card gallery"
+     data-lightbox="art"
+     data-title="{{ name | escape }}"
+     {% if meta.prize %}data-prize="{{ meta.prize | escape }}"{% endif %}
+     {% if meta.info %}data-info="{{ meta.info | escape }}"{% endif %}>
+    <img src="{{ thumb.path | relative_url }}" alt="{{ name | escape }}" loading="lazy" decoding="async">
+    <h3>{{ name }}</h3>
+    {% if meta.prize %}<p class="prize">🏆 {{ meta.prize }}</p>{% endif %}
+  </a>
+  {% endfor %}
 </div>
