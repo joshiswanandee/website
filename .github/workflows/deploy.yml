@@ -27,10 +27,10 @@ jobs:
       - name: Install Pillow
         run: pip install Pillow
 
-      - name: Generate art thumbnails
+      - name: Generate watermarked images and thumbnails
         run: |
           python3 <<'PYEOF'
-          from PIL import Image, ImageOps
+          from PIL import Image, ImageOps, ImageDraw, ImageFont
           import glob
           import os
 
@@ -44,11 +44,45 @@ jobs:
           for pattern in patterns:
               files.extend(glob.glob(os.path.join(art_dir, pattern)))
 
+          FONT_PATHS = [
+              "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+              "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+          ]
+
+          def load_font(size):
+              for p in FONT_PATHS:
+                  if os.path.exists(p):
+                      try:
+                          return ImageFont.truetype(p, size)
+                      except Exception:
+                          pass
+              return ImageFont.load_default()
+
+          def watermark(img, text="© Swanandee"):
+              img = img.convert("RGBA")
+              w, h = img.size
+              font = load_font(max(20, w // 14))
+
+              draw = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+              bbox = draw.textbbox((0, 0), text, font=font)
+              tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+
+              text_layer = Image.new("RGBA", (tw + 20, th + 20), (0, 0, 0, 0))
+              ImageDraw.Draw(text_layer).text((10, 10), text, font=font, fill=(255, 255, 255, 110))
+              text_layer = text_layer.rotate(30, expand=True, resample=Image.BICUBIC)
+
+              layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
+              x = (w - text_layer.width) // 2
+              y = (h - text_layer.height) // 2
+              layer.paste(text_layer, (x, y), text_layer)
+
+              return Image.alpha_composite(img, layer).convert("RGB")
+
           def save(img, path, fmt):
               if fmt == "JPEG":
                   if img.mode != "RGB":
                       img = img.convert("RGB")
-                  img.save(path, fmt, quality=80, optimize=True)
+                  img.save(path, fmt, quality=85, optimize=True)
               else:
                   img.save(path, fmt, optimize=True)
 
@@ -58,12 +92,19 @@ jobs:
 
               original = Image.open(path)
               original = ImageOps.exif_transpose(original)
+              original.thumbnail((1600, 1600))
 
-              thumb = original.copy()
+              # Overwrite the working copy only (never committed back to the
+              # repo) so the version served on the live site is watermarked,
+              # while the original file in git stays untouched.
+              full_watermarked = watermark(original)
+              save(full_watermarked, path, fmt)
+
+              thumb = full_watermarked.copy()
               thumb.thumbnail((400, 400))
               save(thumb, os.path.join(thumb_dir, name), fmt)
 
-              print("generated thumbnail for", name)
+              print("processed", name)
           PYEOF
 
       - name: Setup Pages

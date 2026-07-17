@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
+  // Block the easy ways to grab a picture: right-click "Save Image As" and
+  // dragging it out of the page. Doesn't stop screenshots -- nothing can.
+  document.querySelectorAll('.card.gallery img').forEach(function (img) {
+    img.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    img.addEventListener('dragstart', function (e) { e.preventDefault(); });
+  });
+
   var links = document.querySelectorAll('[data-lightbox]');
   if (!links.length) return;
 
@@ -26,6 +33,9 @@ document.addEventListener('DOMContentLoaded', function () {
   document.body.appendChild(overlay);
 
   var imgEl = overlay.querySelector('.lightbox-img');
+  imgEl.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  imgEl.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
   var titleEl = overlay.querySelector('.lightbox-title');
   var prizeEl = overlay.querySelector('.lightbox-prize');
   var infoEl = overlay.querySelector('.lightbox-info');
