@@ -61,14 +61,17 @@ jobs:
           def watermark(img, text="© Swanandee"):
               img = img.convert("RGBA")
               w, h = img.size
-              font = load_font(max(20, w // 14))
+              font = load_font(max(28, w // 10))
 
               draw = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
-              bbox = draw.textbbox((0, 0), text, font=font)
+              bbox = draw.textbbox((0, 0), text, font=font, stroke_width=3)
               tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
 
-              text_layer = Image.new("RGBA", (tw + 20, th + 20), (0, 0, 0, 0))
-              ImageDraw.Draw(text_layer).text((10, 10), text, font=font, fill=(255, 255, 255, 110))
+              text_layer = Image.new("RGBA", (tw + 30, th + 30), (0, 0, 0, 0))
+              ImageDraw.Draw(text_layer).text(
+                  (15, 15), text, font=font,
+                  fill=(255, 255, 255, 160), stroke_width=3, stroke_fill=(0, 0, 0, 140)
+              )
               text_layer = text_layer.rotate(30, expand=True, resample=Image.BICUBIC)
 
               layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
