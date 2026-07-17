@@ -1,19 +1,21 @@
-name: Generate Art Thumbnails
+name: Build and deploy site
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "assets/images/art/*.jpg"
-      - "assets/images/art/*.jpeg"
-      - "assets/images/art/*.png"
-      - "assets/images/art/*.webp"
+    branches: ["main"]
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  thumbnails:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +27,7 @@ jobs:
       - name: Install Pillow
         run: pip install Pillow
 
-      - name: Resize originals and generate thumbnails
+      - name: Generate art thumbnails
         run: |
           python3 <<'PYEOF'
           from PIL import Image, ImageOps
@@ -46,7 +48,7 @@ jobs:
               if fmt == "JPEG":
                   if img.mode != "RGB":
                       img = img.convert("RGB")
-                  img.save(path, fmt, quality=85, optimize=True)
+                  img.save(path, fmt, quality=80, optimize=True)
               else:
                   img.save(path, fmt, optimize=True)
 
@@ -57,25 +59,32 @@ jobs:
               original = Image.open(path)
               original = ImageOps.exif_transpose(original)
 
-              full = original.copy()
-              full.thumbnail((1600, 1600))
-              save(full, path, fmt)
-
               thumb = original.copy()
               thumb.thumbnail((400, 400))
               save(thumb, os.path.join(thumb_dir, name), fmt)
 
-              print("processed", name)
+              print("generated thumbnail for", name)
           PYEOF
 
-      - name: Commit thumbnails if anything changed
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add assets/images/art
-          if git diff --cached --quiet; then
-            echo "Nothing to commit"
-          else
-            git commit -m "Auto-generate thumbnails"
-            git push
-          fi
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
