@@ -1,0 +1,81 @@
+name: Generate Art Thumbnails
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "assets/images/art/*.jpg"
+      - "assets/images/art/*.jpeg"
+      - "assets/images/art/*.png"
+      - "assets/images/art/*.webp"
+
+permissions:
+  contents: write
+
+jobs:
+  thumbnails:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Pillow
+        run: pip install Pillow
+
+      - name: Resize originals and generate thumbnails
+        run: |
+          python3 <<'PYEOF'
+          from PIL import Image, ImageOps
+          import glob
+          import os
+
+          art_dir = "assets/images/art"
+          thumb_dir = os.path.join(art_dir, "thumbs")
+          os.makedirs(thumb_dir, exist_ok=True)
+
+          patterns = ["*.jpg", "*.jpeg", "*.png", "*.webp",
+                      "*.JPG", "*.JPEG", "*.PNG", "*.WEBP"]
+          files = []
+          for pattern in patterns:
+              files.extend(glob.glob(os.path.join(art_dir, pattern)))
+
+          def save(img, path, fmt):
+              if fmt == "JPEG":
+                  if img.mode != "RGB":
+                      img = img.convert("RGB")
+                  img.save(path, fmt, quality=85, optimize=True)
+              else:
+                  img.save(path, fmt, optimize=True)
+
+          for path in files:
+              name = os.path.basename(path)
+              fmt = "PNG" if name.lower().endswith(".png") else "JPEG"
+
+              original = Image.open(path)
+              original = ImageOps.exif_transpose(original)
+
+              full = original.copy()
+              full.thumbnail((1600, 1600))
+              save(full, path, fmt)
+
+              thumb = original.copy()
+              thumb.thumbnail((400, 400))
+              save(thumb, os.path.join(thumb_dir, name), fmt)
+
+              print("processed", name)
+          PYEOF
+
+      - name: Commit thumbnails if anything changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/images/art
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+          else
+            git commit -m "Auto-generate thumbnails"
+            git push
+          fi
